@@ -12,21 +12,24 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header>
-  <span class="static-title">VEO </span>CAST
-</header>
+
+    
+  <header>
+       V E O ㅤㅤC A S T
+  </header>
   
-  <div class="video-container animate__animated animate__fadeIn">
+  <div class="video-container">
     <div class="video-section">
-      <video id="video" class="video-js vjs-default-skin" controls autoplay muted playsinline></video>
+      <video id="video" class="video-js vjs-default-skin" controls autoplay muted playsinline preload="auto"></video>
     </div>
   </div>
   
   <div class="error-message" id="errorMessage"></div>
   
-  <div class="channel-name animate__animated animate__fadeIn" id="currentChannelName">اختر قناة من الأسفل</div>
+  <div class="channel-name" id="currentChannelName">اختر قناة من الأسفل</div>
   
-  <div class="custom-dropdown animate__animated animate__fadeIn" id="qualityDropdown">
+  <!-- Custom Dropdown for Quality -->
+  <div class="custom-dropdown" id="qualityDropdown">
     <div class="dropdown-header" onclick="toggleDropdown()">
       <span id="selectedQuality">HD</span>
       <i class="fas fa-chevron-down"></i>
@@ -40,17 +43,20 @@
     </div>
   </div>
   
-  <div class="category-tabs animate__animated animate__fadeIn">
+  <div class="category-tabs">
     <div class="category-tab active" data-category="bein">beIN SPORTS</div>
     <div class="category-tab" data-category="alkass">Al Kass SPORTS</div>
     <div class="category-tab" data-category="ssc">SSC SPORTS</div>
   </div>
   
-  <div class="channel-list active animate__animated animate__fadeIn" id="bein-channels"></div>
+  <!-- قسم beIN SPORTS -->
+  <div class="channel-list active" id="bein-channels"></div>
+  
+  <!-- قسم Al Kass SPORTS -->
   <div class="channel-list" id="alkass-channels"></div>
+  
+  <!-- قسم SSC SPORTS -->
   <div class="channel-list" id="ssc-channels"></div>
-    
-
     
 <script src="script.js"></script>
 </body>
