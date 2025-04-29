@@ -1,61 +1,1262 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>VEO CAST</title>
-  <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet" />
-  <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
-    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VEO CAST PRO</title>
+    <link href="https://vjs.zencdn.net/8.10.0/video-js.css" rel="stylesheet">
+    <script src="https://vjs.zencdn.net/8.10.0/video.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #FFD700;
+            --secondary: #1E1E1E;
+            --accent: #FF6B6B;
+            --dark: #121212;
+            --light: #2A2A2A;
+            --text: #FFFFFF;
+            --text-secondary: #B0B0B0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--dark);
+            color: var(--text);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* الهيدر المعدل */
+        .main-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: linear-gradient(135deg, var(--secondary), var(--dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            color: var(--primary);
+            font-size: 24px;
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: bold;
+            background: linear-gradient(to right, var(--primary), #FFA500);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* مشغل الفيديو المعدل */
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 1200px;
+            margin: 80px auto 30px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            aspect-ratio: 16/9;
+            background: #000;
+        }
+
+        .video-js {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* شعار LIVE */
+        .live-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: #FF0000;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 14px;
+            z-index: 1;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        /* زر التقديم */
+        .sync-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            z-index: 1;
+            display: none;
+        }
+
+        .sync-btn:hover {
+            background-color: rgba(255, 215, 0, 0.2);
+        }
+
+        /* معلومات القناة */
+        .channel-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: linear-gradient(90deg, rgba(30, 30, 30, 0.7), rgba(18, 18, 18, 0.9));
+            border-radius: 10px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .channel-title {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .channel-logo {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+        }
+
+        .channel-name {
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .channel-meta {
+            display: flex;
+            gap: 20px;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: var(--text-secondary);
+        }
+
+        /* عناصر التحكم */
+        .control-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .quality-selector {
+            position: relative;
+        }
+
+        .quality-btn {
+            background: rgba(30, 30, 30, 0.8);
+            border: 1px solid var(--primary);
+            color: var(--text);
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+
+        .quality-btn:hover {
+            background: rgba(255, 215, 0, 0.1);
+        }
+
+        .quality-options {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: var(--secondary);
+            border: 1px solid var(--primary);
+            border-radius: 10px;
+            padding: 10px 0;
+            min-width: 150px;
+            z-index: 100;
+            display: none;
+        }
+
+        .quality-options.show {
+            display: block;
+        }
+
+        .quality-option {
+            padding: 8px 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .quality-option:hover {
+            background: rgba(255, 215, 0, 0.2);
+            color: var(--primary);
+        }
+
+        .control-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .control-btn {
+            background: rgba(30, 30, 30, 0.8);
+            border: 1px solid var(--primary);
+            color: var(--text);
+            padding: 10px 15px;
+            border-radius: 30px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .control-btn:hover {
+            background: rgba(255, 215, 0, 0.2);
+        }
+
+        /* قائمة القنوات */
+        .channels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .channel-card {
+            background: linear-gradient(145deg, var(--light), var(--secondary));
+            border-radius: 10px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative;
+        }
+
+        .channel-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            border-color: rgba(255, 215, 0, 0.3);
+        }
+
+        .channel-card:hover .channel-thumbnail {
+            transform: scale(1.05);
+        }
+
+        .channel-thumbnail {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+
+        .channel-details {
+            padding: 15px;
+        }
+
+        .channel-card-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .channel-card-category {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .favorite-btn {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 2;
+        }
+
+        .favorite-btn:hover {
+            color: var(--accent);
+            background: rgba(255, 107, 107, 0.3);
+        }
+
+        .favorite-btn.active {
+            color: var(--accent);
+        }
+
+        /* التصنيفات */
+        .categories-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            padding-bottom: 10px;
+        }
+
+        .category-tab {
+            background: rgba(30, 30, 30, 0.8);
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            color: var(--text-secondary);
+            padding: 8px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.3s;
+        }
+
+        .category-tab:hover {
+            border-color: var(--primary);
+            color: var(--text);
+        }
+
+        .category-tab.active {
+            background: var(--primary);
+            color: #000;
+            font-weight: bold;
+        }
+
+        /* زر فتح المفضلة */
+        .open-favorites {
+            display: block;
+            margin: 20px auto;
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            padding: 10px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .open-favorites:hover {
+            background: rgba(255, 215, 0, 0.2);
+        }
+
+        /* شاشة التحميل */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            display: none;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(255, 215, 0, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        .loading-text {
+            font-size: 18px;
+            color: var(--text-secondary);
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* التكيف مع الشاشات الصغيرة */
+        @media (max-width: 768px) {
+            .video-container {
+                margin-top: 60px;
+            }
+            
+            .channel-info {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+            
+            .control-panel {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .channels-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+        }
+
+        @media (max-width: 576px) {
+            .channels-grid {
+                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            }
+            
+            .channel-thumbnail {
+                height: 100px;
+            }
+            
+            .channel-details {
+                padding: 10px;
+            }
+        }
+    </style>
 </head>
 <body>
-
-    <header>
-       V E O ㅤㅤC A S T
+    <!-- الهيدر المعدل -->
+    <header class="main-header">
+        <div class="logo">
+            <span class="logo-icon"><i class="fas fa-tv"></i></span>
+            <span class="logo-text">VEO CAST PRO</span>
+        </div>
     </header>
-    
-    <div class="loading-overlay" id="loadingOverlay">
-      <div class="loading-spinner"></div>
-      <div class="loading-text">جاري تحميل البث...</div>
-    </div>
-    
+
+    <!-- مشغل الفيديو مع شعار LIVE وزر التقديم -->
     <div class="video-container">
-      <div class="video-section">
-        <video id="video" class="video-js vjs-default-skin" controls autoplay muted playsinline></video>
-      </div>
+        <div class="live-badge">LIVE</div>
+        <button class="sync-btn" id="syncBtn">
+            <i class="fas fa-sync-alt"></i> تقديم
+        </button>
+        <video id="videoPlayer" class="video-js vjs-default-skin" controls autoplay muted playsinline></video>
     </div>
-    
-    <div class="error-message" id="errorMessage"></div>
-    
-    <div class="channel-name" id="currentChannelName">اختر قناة من الأسفل</div>
-    
-    <div class="custom-dropdown" id="qualityDropdown">
-      <div class="dropdown-header" onclick="toggleDropdown()">
-        <span id="selectedQuality">HD</span>
-        <i class="fas fa-chevron-down"></i>
-      </div>
-      <div class="dropdown-options" id="dropdownOptions">
-        <div class="dropdown-option" onclick="selectQuality('low', 'LOW')">LOW</div>
-        <div class="dropdown-option" onclick="selectQuality('sd', 'SD')">SD</div>
-        <div class="dropdown-option active" onclick="selectQuality('hd', 'HD')">HD</div>
-        <div class="dropdown-option" onclick="selectQuality('fhd', 'FHD')">FHD</div>
-        <div class="dropdown-option" onclick="selectQuality('4k', '4K')">4K</div>
-      </div>
+
+    <!-- معلومات القناة -->
+    <div class="channel-info" id="channelInfo">
+        <div class="channel-title">
+            <img src="https://i.ibb.co/5hTNGxd3/image.jpg" alt="قناة" class="channel-logo" id="channelLogo">
+            <h2 class="channel-name" id="channelName">اختر قناة للبث</h2>
+        </div>
+        <div class="channel-meta">
+            <div class="meta-item">
+                <i class="fas fa-eye"></i>
+                <span>1.2K مشاهد</span>
+            </div>
+            <div class="meta-item">
+                <i class="fas fa-signal"></i>
+                <span id="currentQuality">HD</span>
+            </div>
+        </div>
     </div>
-    
-    <div class="category-tabs">
-      <div class="category-tab active" data-category="bein">beIN SPORTS</div>
-      <div class="category-tab" data-category="alkass">Al Kass SPORTS</div>
-      <div class="category-tab" data-category="ssc">SSC SPORTS</div>
+
+    <!-- عناصر التحكم -->
+    <div class="control-panel">
+        <div class="quality-selector">
+            <button class="quality-btn" id="qualityBtn">
+                <span>جودة البث: HD</span>
+                <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="quality-options" id="qualityOptions">
+                <div class="quality-option" data-quality="low">LOW</div>
+                <div class="quality-option" data-quality="sd">SD</div>
+                <div class="quality-option active" data-quality="hd">HD</div>
+                <div class="quality-option" data-quality="fhd">FHD</div>
+                <div class="quality-option" data-quality="4k">4K</div>
+            </div>
+        </div>
+        
+        <div class="control-buttons">
+            <button class="control-btn" id="favoriteBtn">
+                <i class="far fa-heart"></i>
+                <span>إضافة للمفضلة</span>
+            </button>
+            <button class="control-btn" id="fullscreenBtn">
+                <i class="fas fa-expand"></i>
+                <span>ملء الشاشة</span>
+            </button>
+        </div>
     </div>
-    
-    <div class="channel-list active" id="bein-channels"></div>
-    <div class="channel-list" id="alkass-channels"></div>
-    <div class="channel-list" id="ssc-channels"></div>    
-    
-<script src="script.js"></script>
-</body>
-</html>
+
+    <!-- التصنيفات -->
+    <div class="categories-tabs" id="categoriesTabs">
+        <div class="category-tab active" data-category="bein">beIN SPORTS</div>
+        <div class="category-tab" data-category="alkass">Al Kass SPORTS</div>
+        <div class="category-tab" data-category="ssc">SSC SPORTS</div>
+    </div>
+
+    <!-- جميع القنوات -->
+    <div class="channels-section">
+        <div class="channels-grid" id="channelsGrid"></div>
+    </div>
+
+    <!-- زر فتح صفحة المفضلة -->
+    <button class="open-favorites" id="openFavorites">
+        <i class="fas fa-heart"></i> عرض القنوات المفضلة
+    </button>
+
+    <!-- شاشة التحميل -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">جاري تحميل البث...</div>
+    </div>
+
+    <script>
+        // قاعدة بيانات القنوات
+        const channelsDB = {
+            bein: {
+                bein1: {
+                    name: "BeIN Sports 1",
+                    image: "https://i.ibb.co/5hTNGxd3/image.jpg",
+                    sources: {
+                        low: "https://raw.githubusercontent.com/Downloadappl/xpola-player/main/bin1.m3u8",
+                        sd: "https://raw.githubusercontent.com/Downloadappl/xpola-player/main/bin1.m3u8",
+                        hd: "https://raw.githubusercontent.com/Downloadappl/xpola-player/main/bin1.m3u8",
+                        fhd: "https://raw.githubusercontent.com/Downloadappl/xpola-player/main/bin1.m3u8",
+                        "4k": "https://raw.githubusercontent.com/Downloadappl/xpola-player/main/bin1.m3u8"
+                    }
+                },
+                bein2: {
+                    name: "BeIN Sports 2",
+                    image: "https://i.ibb.co/dwhbSS9g/image.jpg",
+                    sources: {
+                        low: "http://s.showplustv.pro:80/live/784512589635/785412587453/44563.m3u8",
+                        sd: "http://s.showplustv.pro:80/live/784512589635/785412587453/40838.m3u8",
+                        hd: "http://s.showplustv.pro:80/live/784512589635/785412587453/31543.m3u8",
+                        fhd: "http://s.showplustv.pro:80/live/784512589635/785412587453/31543.m3u8",
+                        "4k": "http://s.showplustv.pro:80/live/784512589635/785412587453/18087.m3u8"
+                    }
+                },
+                bein3: {
+                    name: "BeIN Sports 3",
+                    image: "https://i.ibb.co/9HXNtwKn/image.jpg",
+                    sources: {
+                        low: "http://s.showplustv.pro:80/live/784512589635/785412587453/44564.m3u8",
+                        sd: "http://s.showplustv.pro:80/live/784512589635/785412587453/40839.m3u8",
+                        hd: "http://s.showplustv.pro:80/live/784512589635/785412587453/31544.m3u8",
+                        fhd: "http://s.showplustv.pro:80/live/784512589635/785412587453/31544.m3u8",
+                        "4k": "http://s.showplustv.pro:80/live/784512589635/785412587453/18086.m3u8"
+                    }
+                },
+                bein4: {
+                    name: "BeIN Sports 4",
+                    image: "https://i.ibb.co/PzJFcxqR/image.jpg",
+                    sources: {
+                        low: "http://s.showplustv.pro:80/live/784512589635/785412587453/44555.m3u8",
+                        sd: "http://s.showplustv.pro:80/live/784512589635/785412587453/40830.m3u8",
+                        hd: "http://s.showplustv.pro:80/live/784512589635/785412587453/31535.m3u8",
+                        fhd: "http://s.showplustv.pro:80/live/784512589635/785412587453/31535.m3u8",
+                        "4k": "http://s.showplustv.pro:80/live/784512589635/785412587453/18095.m3u8"
+                    }
+                },
+                bein5: {
+                    name: "BeIN Sports 5",
+                    image: "https://i.ibb.co/C551ztYq/image.jpg",
+                    sources: {
+                        low: "http://s.showplustv.pro:80/live/784512589635/785412587453/44556.m3u8",
+                        sd: "http://s.showplustv.pro:80/live/784512589635/785412587453/40831.m3u8",
+                        hd: "http://s.showplustv.pro:80/live/784512589635/785412587453/31536.m3u8",
+                        fhd: "http://s.showplustv.pro:80/live/784512589635/785412587453/31536.m3u8",
+                        "4k": "http://s.showplustv.pro:80/live/784512589635/785412587453/18094.m3u8"
+                    }
+                },
+                bein6: {
+                    name: "BeIN Sports 6",
+                    image: "https://i.ibb.co/TxXK7TYr/image.jpg",
+                    sources: {
+                        low: "http://s.showplustv.pro:80/live/784512589635/785412587453/44557.m3u8",
+                        sd: "http://s.showplustv.pro:80/live/784512589635/785412587453/40832.m3u8",
+                        hd: "http://s.showplustv.pro:80/live/784512589635/785412587453/31537.m3u8",
+                        fhd: "http://s.showplustv.pro:80/live/784512589635/785412587453/31537.m3u8",
+                        "4k": "http://s.showplustv.pro:80/live/784512589635/785412587453/18093.m3u8"
+                    }
+                },
+                bein7: {
+                    name: "BeIN Sports 7",
+                    image: "https://i.ibb.co/bgk059YL/image.jpg",
+                    sources: {
+                        low: "http://s.showplustv.pro:80/live/784512589635/785412587453/44558.m3u8",
+                        sd: "http://s.showplustv.pro:80/live/784512589635/785412587453/40833.m3u8",
+                        hd: "http://s.showplustv.pro:80/live/784512589635/785412587453/31538.m3u8",
+                        fhd: "http://s.showplustv.pro:80/live/784512589635/785412587453/31538.m3u8",
+                        "4k": "http://s.showplustv.pro:80/live/784512589635/785412587453/18092.m3u8"
+                    }
+                },
+                bein8: {
+                    name: "BeIN Sports 8",
+                    image: "https://i.ibb.co/fzyW40tj/image.jpg",
+                    sources: {
+                        low: "http://s.showplustv.pro:80/live/784512589635/785412587453/44559.m3u8",
+                        sd: "http://s.showplustv.pro:80/live/784512589635/785412587453/40834.m3u8",
+                        hd: "http://s.showplustv.pro:80/live/784512589635/785412587453/31539.m3u8",
+                        fhd: "http://s.showplustv.pro:80/live/784512589635/785412587453/31539.m3u8",
+                        "4k": "http://s.showplustv.pro:80/live/784512589635/785412587453/18091.m3u8"
+                    }
+                },
+                bein9: {
+                    name: "BeIN Sports 9",
+                    image: "https://i.ibb.co/1YFcL0nc/image.jpg",
+                    sources: {
+                        low: "http://s.showplustv.pro:80/live/784512589635/785412587453/44560.m3u8",
+                        sd: "http://s.showplustv.pro:80/live/784512589635/785412587453/40835.m3u8",
+                        hd: "http://s.showplustv.pro:80/live/784512589635/785412587453/31540.m3u8",
+                        fhd: "http://s.showplustv.pro:80/live/784512589635/785412587453/31540.m3u8",
+                        "4k": "http://s.showplustv.pro:80/live/784512589635/785412587453/18090.m3u8"
+                    }
+                }
+            },
+            alkass: {
+                alkass1: {
+                    name: "Al Kass 1",
+                    image: "https://i.ibb.co/rG1k0d2s/image.jpg",
+                    sources: {
+                        low: "http://s.showplustv.pro:80/live/784512589635/785412587453/46761.m3u8",
+                        sd: "http://s.showplustv.pro:80/live/784512589635/785412587453/46761.m3u8",
+                        hd: "http://s.showplustv.pro:80/live/784512589635/785412587453/46761.m3u8",
+                        fhd: "http://s.showplustv.pro:80/live/784512589635/785412587453/46761.m3u8",
+                        "4k": "http://s.showplustv.pro:80/live/784512589635/785412587453/46761.m3u8"
+                    }
+                },
+                alkass2: {
+                    name: "Al Kass 2",
+                    image: "https://i.ibb.co/j9fvPJDn/image.jpg",
+                    sources: {
+                        low: "http://s.showplustv.pro:80/live/784512589635/785412587453/46760.m3u8",
+                        sd: "http://s.showplustv.pro:80/live/784512589635/785412587453/46760.m3u8",
+                        hd: "http://s.showplustv.pro:80/live/784512589635/785412587453/46760.m3u8",
+                        fhd: "http://s.showplustv.pro:80/live/784512589635/785412587453/46760.m3u8",
+                        "4k": "http://s.showplustv.pro:80/live/784512589635/785412587453/46760.m3u8"
+                    }
+                },
+                alkass3: {
+                    name: "Al Kass 3",
+                    image: "https://i.ibb.co/9kkKQGkh/image.jpg",
+                    sources: {
+                        low: "http://s.showplustv.pro:80/live/784512589635/785412587453/46759.m3u8",
+                        sd: "http://s.showplustv.pro:80/live/784512589635/785412587453/46759.m3u8",
+                        hd: "http://s.showplustv.pro:80/live/784512589635/785412587453/46759.m3u8",
+                        fhd: "http://s.showplustv.pro:80/live/784512589635/785412587453/46759.m3u8",
+                        "4k": "http://s.showplustv.pro:80/live/784512589635/785412587453/46759.m3u8"
+                    }
+                },
+                alkass4: {
+                    name: "Al Kass 4",
+                    image: "https://i.ibb.co/ghnZ7Qt/image.jpg",
+                    sources: {
+                        low: "http://s.showplustv.pro:80/live/784512589635/785412587453/46757.m3u8",
+                        sd: "http://s.showplustv.pro:80/live/784512589635/785412587453/46757.m3u8",
+                        hd: "http://s.showplustv.pro:80/live/784512589635/785412587453/46757.m3u8",
+                        fhd: "http://s.showplustv.pro:80/live/784512589635/785412587453/46757.m3u8",
+                        "4k": "http://s.showplustv.pro:80/live/784512589635/785412587453/46757.m3u8"
+                    }
+                },
+                alkass5: {
+                    name: "Al Kass 5",
+                    image: "https://i.ibb.co/1GNGYXpN/image.jpg",
+                    sources: {
+                        low: "http://s.showplustv.pro:80/live/784512589635/785412587453/113778.m3u8",
+                        sd: "http://s.showplustv.pro:80/live/784512589635/785412587453/113778.m3u8",
+                        hd: "http://s.showplustv.pro:80/live/784512589635/785412587453/113778.m3u8",
+                        fhd: "http://s.showplustv.pro:80/live/784512589635/785412587453/113778.m3u8",
+                        "4k": "http://s.showplustv.pro:80/live/784512589635/785412587453/113778.m3u8"
+                    }
+                }
+            },
+            ssc: {
+                ssc1: {
+                    name: "SSC 1",
+                    image: "https://i.ibb.co/jZPZqwSC/image.jpg",
+                    sources: {
+                        low: "http://s.showplustv.pro:80/live/784512589635/785412587453/70949.m3u8",
+                        sd: "http://s.showplustv.pro:80/live/784512589635/785412587453/102193.m3u8",
+                        hd: "http://s.showplustv.pro:80/live/784512589635/785412587453/60858.m3u8",
+                        fhd: "http://s.showplustv.pro:80/live/784512589635/785412587453/102177.m3u8",
+                        "4k": "http://s.showplustv.pro:80/live/784512589635/785412587453/60859.m3u8"
+                    }
+                },
+                ssc2: {
+                    name: "SSC 2",
+                    image: "https://i.ibb.co/5gFrcXVD/image.jpg",
+                    sources: {
+                        low: "http://s.showplustv.pro:80/live/784512589635/785412587453/70948.m3u8",
+                        sd: "http://s.showplustv.pro:80/live/784512589635/785412587453/102192.m3u8",
+                        hd: "http://s.showplustv.pro:80/live/784512589635/785412587453/61029.m3u8",
+                        fhd: "http://s.showplustv.pro:80/live/784512589635/785412587453/102176.m3u8",
+                        "4k": "http://s.showplustv.pro:80/live/784512589635/785412587453/61030.m3u8"
+                    }
+                },
+                ssc3: {
+                    name: "SSC 3",
+                    image: "https://i.ibb.co/F4CK2BH8/image.jpg",
+                    sources: {
+                        low: "http://s.showplustv.pro:80/live/784512589635/785412587453/70947.m3u8",
+                        sd: "http://s.showplustv.pro:80/live/784512589635/785412587453/102191.m3u8",
+                        hd: "http://s.showplustv.pro:80/live/784512589635/785412587453/62267.m3u8",
+                        fhd: "http://s.showplustv.pro:80/live/784512589635/785412587453/102175.m3u8",
+                        "4k": "http://s.showplustv.pro:80/live/784512589635/785412587453/62265.m3u8"
+                    }
+                },
+                ssc4: {
+                    name: "SSC 4",
+                    image: "https://i.ibb.co/tp1jHrbG/image.jpg",
+                    sources: {
+                        low: "http://s.showplustv.pro:80/live/784512589635/785412587453/70946.m3u8",
+                        sd: "http://s.showplustv.pro:80/live/784512589635/785412587453/102190.m3u8",
+                        hd: "http://s.showplustv.pro:80/live/784512589635/785412587453/62268.m3u8",
+                        fhd: "http://s.showplustv.pro:80/live/784512589635/785412587453/102174.m3u8",
+                        "4k": "http://s.showplustv.pro:80/live/784512589635/785412587453/62266.m3u8"
+                    }
+                },
+                ssc5: {
+                    name: "SSC 5",
+                    image: "https://i.ibb.co/PsDZMPQv/image.jpg",
+                    sources: {
+                        low: "http://s.showplustv.pro:80/live/784512589635/785412587453/70945.m3u8",
+                        sd: "http://s.showplustv.pro:80/live/784512589635/785412587453/102189.m3u8",
+                        hd: "http://s.showplustv.pro:80/live/784512589635/785412587453/61032.m3u8",
+                        fhd: "http://s.showplustv.pro:80/live/784512589635/785412587453/102173.m3u8",
+                        "4k": "http://s.showplustv.pro:80/live/784512589635/785412587453/61031.m3u8"
+                    }
+                },
+                ssc1x: {
+                    name: "SSC Extra 1",
+                    image: "https://i.ibb.co/XZkhxX4J/image.jpg",
+                    sources: {
+                        low: "http://s.showplustv.pro:80/live/784512589635/785412587453/70944.m3u8",
+                        sd: "http://s.showplustv.pro:80/live/784512589635/785412587453/102188.m3u8",
+                        hd: "http://s.showplustv.pro:80/live/784512589635/785412587453/61034.m3u8",
+                        fhd: "http://s.showplustv.pro:80/live/784512589635/785412587453/102172.m3u8",
+                        "4k": "http://s.showplustv.pro:80/live/784512589635/785412587453/61033.m3u8"
+                    }
+                },
+                ssc2x: {
+                    name: "SSC Extra 2",
+                    image: "https://i.ibb.co/XZqqGQjb/image.jpg",
+                    sources: {
+                        low: "http://s.showplustv.pro:80/live/784512589635/785412587453/70943.m3u8",
+                        sd: "http://s.showplustv.pro:80/live/784512589635/785412587453/102187.m3u8",
+                        hd: "http://s.showplustv.pro:80/live/784512589635/785412587453/61068.m3u8",
+                        fhd: "http://s.showplustv.pro:80/live/784512589635/785412587453/102171.m3u8",
+                        "4k": "http://s.showplustv.pro:80/live/784512589635/785412587453/61067.m3u8"
+                    }
+                },
+                ssc3x: {
+                    name: "SSC Extra 3",
+                    image: "https://i.ibb.co/fY6qsTy0/image.jpg",
+                    sources: {
+                        low: "http://s.showplustv.pro:80/live/784512589635/785412587453/99003.m3u8",
+                        sd: "http://s.showplustv.pro:80/live/784512589635/785412587453/102186.m3u8",
+                        hd: "http://s.showplustv.pro:80/live/784512589635/785412587453/99010.m3u8",
+                        fhd: "http://s.showplustv.pro:80/live/784512589635/785412587453/102170.m3u8",
+                        "4k": "http://s.showplustv.pro:80/live/784512589635/785412587453/99011.m3u8"
+                    }
+                }
+            }
+        };
+
+        // حالة التطبيق
+        const state = {
+            currentChannel: null,
+            currentQuality: 'hd',
+            favorites: JSON.parse(localStorage.getItem('favorites')) || [],
+            currentCategory: 'bein',
+            hls: null,
+            latencyCheckInterval: null
+        };
+
+        // تهيئة المشغل
+        const player = videojs('videoPlayer', {
+            html5: {
+                hls: {
+                    overrideNative: true,
+                    enableLowInitialPlaylist: true,
+                    smoothQualityChange: true,
+                    maxBufferLength: 30,
+                    maxMaxBufferLength: 60,
+                    bandwidth: 4194304
+                }
+            },
+            controls: true,
+            autoplay: true,
+            muted: true,
+            fluid: true,
+            responsive: true,
+            fill: true
+        });
+
+        // عناصر DOM
+        const DOM = {
+            qualityBtn: document.getElementById('qualityBtn'),
+            qualityOptions: document.getElementById('qualityOptions'),
+            currentQuality: document.getElementById('currentQuality'),
+            channelInfo: document.getElementById('channelInfo'),
+            channelName: document.getElementById('channelName'),
+            channelLogo: document.getElementById('channelLogo'),
+            favoriteBtn: document.getElementById('favoriteBtn'),
+            fullscreenBtn: document.getElementById('fullscreenBtn'),
+            categoriesTabs: document.getElementById('categoriesTabs'),
+            channelsGrid: document.getElementById('channelsGrid'),
+            openFavorites: document.getElementById('openFavorites'),
+            loadingOverlay: document.getElementById('loadingOverlay'),
+            syncBtn: document.getElementById('syncBtn')
+        };
+
+        // تهيئة الواجهة
+        function initUI() {
+            // تحميل القنوات
+            loadChannels(state.currentCategory);
+            
+            // إعداد عناصر التحكم
+            setupControls();
+        }
+
+        // تحميل القنوات حسب التصنيف
+        function loadChannels(category) {
+            DOM.channelsGrid.innerHTML = '';
+            
+            if (!channelsDB[category]) return;
+            
+            for (const [id, channel] of Object.entries(channelsDB[category])) {
+                const isFavorite = state.favorites.includes(`${category}_${id}`);
+                
+                const channelCard = document.createElement('div');
+                channelCard.className = 'channel-card';
+                channelCard.dataset.id = id;
+                channelCard.dataset.category = category;
+                channelCard.innerHTML = `
+                    <button class="favorite-btn ${isFavorite ? 'active' : ''}">
+                        <i class="${isFavorite ? 'fas' : 'far'} fa-heart"></i>
+                    </button>
+                    <img src="${channel.image}" alt="${channel.name}" class="channel-thumbnail">
+                    <div class="channel-details">
+                        <div class="channel-card-name">${channel.name}</div>
+                        <div class="channel-card-category">${getCategoryName(category)}</div>
+                    </div>
+                `;
+                
+                channelCard.addEventListener('click', () => playChannel(id, category));
+                
+                const favoriteBtn = channelCard.querySelector('.favorite-btn');
+                favoriteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleFavorite(id, category, favoriteBtn);
+                });
+                
+                DOM.channelsGrid.appendChild(channelCard);
+            }
+        }
+
+        // تشغيل القناة
+        function playChannel(channelId, category) {
+            const channel = channelsDB[category][channelId];
+            if (!channel) return;
+            
+            state.currentChannel = { id: channelId, category };
+            
+            // تحديث واجهة القناة
+            DOM.channelName.textContent = channel.name;
+            DOM.channelLogo.src = channel.image;
+            DOM.channelInfo.style.display = 'flex';
+            
+            // تحديث زر المفضلة
+            updateFavoriteButton(channelId, category);
+            
+            // تشغيل البث
+            playStream(channel.sources[state.currentQuality]);
+        }
+
+        // تشغيل البث
+        function playStream(url) {
+            showLoading();
+            
+            // إيقاف أي مراقبة تأخير سابقة
+            if (state.latencyCheckInterval) {
+                clearInterval(state.latencyCheckInterval);
+                state.latencyCheckInterval = null;
+            }
+            
+            // إيقاف أي بث سابق
+            if (state.hls) {
+                state.hls.destroy();
+                state.hls = null;
+            }
+            
+            // حل مشكلة Mixed Content
+            const streamUrl = fixMixedContent(url);
+            
+            if (Hls.isSupported()) {
+                state.hls = new Hls({
+                    maxMaxBufferLength: 60,
+                    maxBufferSize: 60 * 1000 * 1000,
+                    maxBufferLength: 30,
+                    enableWorker: true,
+                    backBufferLength: 30,
+                    liveSyncDurationCount: 1
+                });
+                
+                state.hls.loadSource(streamUrl);
+                state.hls.attachMedia(player.tech().el());
+                
+                state.hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                    player.play().catch(e => {
+                        console.error('Playback error:', e);
+                    });
+                    hideLoading();
+                    
+                    // مراقبة التأخير وعرض زر التقديم إذا لزم الأمر
+                    monitorLatency();
+                });
+                
+                state.hls.on(Hls.Events.ERROR, (event, data) => {
+                    if (data.fatal) {
+                        console.error('HLS fatal error:', data);
+                        hideLoading();
+                        
+                        // محاولة إعادة التشغيل بعد 5 ثواني
+                        setTimeout(() => {
+                            if (state.currentChannel) {
+                                const channel = channelsDB[state.currentChannel.category][state.currentChannel.id];
+                                if (channel && channel.sources[state.currentQuality]) {
+                                    playStream(channel.sources[state.currentQuality]);
+                                }
+                            }
+                        }, 5000);
+                    }
+                });
+            } else if (player.tech().el().canPlayType('application/vnd.apple.mpegurl')) {
+                player.src({
+                    src: streamUrl,
+                    type: 'application/x-mpegURL'
+                });
+                
+                player.ready(() => {
+                    player.play().catch(e => {
+                        console.error('Playback error:', e);
+                    });
+                    hideLoading();
+                });
+            } else {
+                hideLoading();
+                alert('متصفحك لا يدعم تشغيل هذا النوع من البث');
+            }
+        }
+
+        // مراقبة التأخير وعرض زر التقديم
+        function monitorLatency() {
+            if (!state.hls) return;
+            
+            // إيقاف أي مراقبة سابقة
+            if (state.latencyCheckInterval) {
+                clearInterval(state.latencyCheckInterval);
+            }
+            
+            // اختبار التأخير كل 5 ثوان
+            state.latencyCheckInterval = setInterval(() => {
+                if (!state.hls || !state.currentChannel) {
+                    clearInterval(state.latencyCheckInterval);
+                    return;
+                }
+                
+                const latency = state.hls.latency;
+                if (latency > 15) { // إذا كان التأخير أكثر من 15 ثانية
+                    DOM.syncBtn.style.display = 'block';
+                } else {
+                    DOM.syncBtn.style.display = 'none';
+                }
+            }, 5000);
+        }
+
+        // حل مشكلة Mixed Content
+        function fixMixedContent(url) {
+            if (window.location.protocol === 'https:' && url.startsWith('http:')) {
+                // يمكنك استبدال هذا بخادم بروكسي خاص بك
+                return url.replace('http://', 'https://');
+            }
+            return url;
+        }
+
+        // إدارة المفضلة
+        function toggleFavorite(channelId, category, button) {
+            const favoriteKey = `${category}_${channelId}`;
+            const index = state.favorites.indexOf(favoriteKey);
+            
+            if (index === -1) {
+                state.favorites.push(favoriteKey);
+                button.classList.add('active');
+                button.innerHTML = '<i class="fas fa-heart"></i>';
+            } else {
+                state.favorites.splice(index, 1);
+                button.classList.remove('active');
+                button.innerHTML = '<i class="far fa-heart"></i>';
+            }
+            
+            localStorage.setItem('favorites', JSON.stringify(state.favorites));
+            
+            if (state.currentChannel && state.currentChannel.id === channelId && state.currentChannel.category === category) {
+                updateFavoriteButton(channelId, category);
+            }
+        }
+
+        // تحديث زر المفضلة
+        function updateFavoriteButton(channelId, category) {
+            const favoriteKey = `${category}_${channelId}`;
+            const isFavorite = state.favorites.includes(favoriteKey);
+            
+            DOM.favoriteBtn.innerHTML = `
+                <i class="${isFavorite ? 'fas' : 'far'} fa-heart"></i>
+                <span>${isFavorite ? 'إزالة من المفضلة' : 'إضافة للمفضلة'}</span>
+            `;
+            
+            if (isFavorite) {
+                DOM.favoriteBtn.classList.add('active');
+            } else {
+                DOM.favoriteBtn.classList.remove('active');
+            }
+        }
+
+        // إعداد عناصر التحكم
+        function setupControls() {
+            // اختيار الجودة
+            DOM.qualityBtn.addEventListener('click', () => {
+                DOM.qualityOptions.classList.toggle('show');
+            });
+            
+            document.addEventListener('click', (e) => {
+                if (!DOM.qualityBtn.contains(e.target) && !DOM.qualityOptions.contains(e.target)) {
+                    DOM.qualityOptions.classList.remove('show');
+                }
+            });
+            
+            DOM.qualityOptions.querySelectorAll('.quality-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const quality = this.dataset.quality;
+                    state.currentQuality = quality;
+                    
+                    // تحديث الواجهة
+                    DOM.qualityBtn.querySelector('span').textContent = `جودة البث: ${quality.toUpperCase()}`;
+                    DOM.currentQuality.textContent = quality.toUpperCase();
+                    DOM.qualityOptions.classList.remove('show');
+                    
+                    // تحديث البث إذا كانت هناك قناة نشطة
+                    if (state.currentChannel) {
+                        const channel = channelsDB[state.currentChannel.category][state.currentChannel.id];
+                        if (channel && channel.sources[quality]) {
+                            playStream(channel.sources[quality]);
+                        }
+                    }
+                    
+                    // تحديث الخيار النشط
+                    DOM.qualityOptions.querySelectorAll('.quality-option').forEach(opt => {
+                        opt.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                });
+            });
+            
+            // زر المفضلة
+            DOM.favoriteBtn.addEventListener('click', () => {
+                if (state.currentChannel) {
+                    const favoriteKey = `${state.currentChannel.category}_${state.currentChannel.id}`;
+                    const index = state.favorites.indexOf(favoriteKey);
+                    const isFavorite = index !== -1;
+                    
+                    // البحث عن زر القلب في بطاقة القناة
+                    const channelCard = document.querySelector(`.channel-card[data-id="${state.currentChannel.id}"][data-category="${state.currentChannel.category}"]`);
+                    if (channelCard) {
+                        const favoriteBtn = channelCard.querySelector('.favorite-btn');
+                        toggleFavorite(state.currentChannel.id, state.currentChannel.category, favoriteBtn);
+                    }
+                }
+            });
+            
+            // زر ملء الشاشة
+            DOM.fullscreenBtn.addEventListener('click', () => {
+                if (player.isFullscreen()) {
+                    player.exitFullscreen();
+                } else {
+                    player.requestFullscreen();
+                }
+            });
+            
+            // زر التقديم
+            DOM.syncBtn.addEventListener('click', () => {
+                if (state.hls) {
+                    state.hls.latencyController.reset();
+                    DOM.syncBtn.style.display = 'none';
+                }
+            });
+            
+            // تبويبات التصنيفات
+            DOM.categoriesTabs.querySelectorAll('.category-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const category = this.dataset.category;
+                    state.currentCategory = category;
+                    
+                    // تحديث الواجهة
+                    DOM.categoriesTabs.querySelectorAll('.category-tab').forEach(t => {
+                        t.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    
+                    // تحميل القنوات
+                    loadChannels(category);
+                });
+            });
+            
+            // زر فتح المفضلة
+            DOM.openFavorites.addEventListener('click', () => {
+                const favoritesPage = window.open('', '_blank');
+                favoritesPage.document.write(`
+                    <!DOCTYPE html>
+                    <html lang="ar" dir="rtl">
+                    <head>
+                        <meta charset="UTF-8">
+                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                        <title>القنوات المفضلة - VEO CAST PRO</title>
+                        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+                        <style>
+                            body {
+                                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                                background-color: #121212;
+                                color: white;
+                                padding: 20px;
+                            }
+                            .favorites-grid {
+                                display: grid;
+                                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+                                gap: 20px;
+                                margin-top: 30px;
+                            }
+                            .channel-card {
+                                background: #2A2A2A;
+                                border-radius: 10px;
+                                overflow: hidden;
+                                cursor: pointer;
+                                border: 1px solid rgba(255, 255, 255, 0.05);
+                            }
+                            .channel-thumbnail {
+                                width: 100%;
+                                height: 120px;
+                                object-fit: cover;
+                            }
+                            .channel-details {
+                                padding: 15px;
+                            }
+                            .channel-card-name {
+                                font-weight: bold;
+                                margin-bottom: 5px;
+                            }
+                            h1 {
+                                color: #FFD700;
+                                text-align: center;
+                                margin-bottom: 30px;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <h1><i class="fas fa-heart"></i> القنوات المفضلة</h1>
+                        <div class="favorites-grid" id="favoritesGrid"></div>
+                        <script>
+                            const favorites = ${JSON.stringify(state.favorites)};
+                            const channelsDB = ${JSON.stringify(channelsDB)};
+                            
+                            const grid = document.getElementById('favoritesGrid');
+                            
+                            if (favorites.length === 0) {
+                                grid.innerHTML = '<p style="grid-column:1/-1;text-align:center;color:#B0B0B0">لا توجد قنوات في المفضلة</p>';
+                            } else {
+                                favorites.forEach(favoriteKey => {
+                                    const [category, id] = favoriteKey.split('_');
+                                    const channel = channelsDB[category]?.[id];
+                                    if (!channel) return;
+                                    
+                                    const card = document.createElement('div');
+                                    card.className = 'channel-card';
+                                    card.innerHTML = \`
+                                        <img src="\${channel.image}" alt="\${channel.name}" class="channel-thumbnail">
+                                        <div class="channel-details">
+                                            <div class="channel-card-name">\${channel.name}</div>
+                                        </div>
+                                    \`;
+                                    
+                                    card.addEventListener('click', () => {
+                                        window.opener.postMessage({ type: 'playChannel', channelId: id, category: category }, '*');
+                                        window.close();
+                                    });
+                                    
+                                    grid.appendChild(card);
+                                });
+                            }
+                                            `);
+            });
+            
+            // استقبال رسائل من صفحة المفضلة
+            window.addEventListener('message', (event) => {
+                if (event.data.type === 'playChannel') {
+                    playChannel(event.data.channelId, event.data.category);
+                }
+            });
+        }
+
+        // وظائف مساعدة
+        function getCategoryName(category) {
+            const names = {
+                bein: 'beIN Sports',
+                alkass: 'Al Kass',
+                ssc: 'SSC'
+            };
+            return names[category] || category;
+        }
+
+        function showLoading() {
+            DOM.loadingOverlay.style.display = 'flex';
+        }
+
+        function hideLoading() {
+            DOM.loadingOverlay.style.display = 'none';
+        }
+
+        // بدء التطبيق
+        document.addEventListener('DOMContentLoaded', initUI);
+                        </script>
+                    </body>
+                    </html>
