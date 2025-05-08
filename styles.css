@@ -1,0 +1,378 @@
+:root {
+  --primary-color: #1a5a1a;
+  --secondary-color: #0d3d0d;
+  --accent-color: #ff9800;
+  --text-color: #ffffff;
+  --dark-bg: #121212;
+  --light-bg: #1e1e1e;
+  --card-bg: #252525;
+  --alert-bg: #ff3333;
+  --alert-text: #ffffff;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Tajawal", sans-serif;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+body {
+  background-color: var(--dark-bg);
+  color: var(--text-color);
+  line-height: 1.6;
+  padding: 20px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* حقوق القناة */
+.channel-credits {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  gap: 15px;
+}
+
+.channel-logo {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--accent-color);
+}
+
+.channel-name {
+  font-size: 1.5rem;
+  color: var(--accent-color);
+  font-weight: bold;
+}
+
+/* مشغل البث */
+.live-player {
+  width: 100%;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
+  margin-bottom: 30px;
+}
+
+/* قنوات البث */
+.channels-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 15px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+/* تصميم الكمبيوتر - مستطيل */
+.channel-row {
+  background-color: var(--card-bg);
+  padding: 15px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.channel-name-row {
+  font-size: 1.2rem;
+  font-weight: bold;
+  min-width: 100px;
+  color: var(--accent-color);
+}
+
+.server-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.server-btn {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: none;
+  color: var(--text-color);
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.3s ease;
+  min-width: 60px;
+  text-align: center;
+}
+
+.server-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.server-btn.active {
+  background-color: var(--primary-color);
+  font-weight: 600;
+}
+
+.loading {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: var(--text-color);
+  animation: spin 1s ease-in-out infinite;
+  margin-right: 5px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* تصميم الموبايل - مربع */
+@media (max-width: 768px) {
+  .channels-container {
+    grid-template-columns: 1fr;
+  }
+
+  .channel-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .server-buttons {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .server-btn {
+    padding: 12px;
+    font-size: 0.9rem;
+  }
+}
+
+/* حقوق النشر */
+.copyright {
+  text-align: center;
+  margin-top: 40px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+}
+
+.disclaimer {
+  margin-top: 10px;
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+/* إشعار التليجرام */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.notification {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.85);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  font-family: "Tajawal", sans-serif;
+}
+
+.card {
+  background: #121a24;
+  color: white;
+  padding: 25px;
+  border-radius: 15px;
+  width: 85%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  animation: slideIn 0.5s ease;
+  border: 1px solid rgba(0, 136, 204, 0.3);
+}
+
+.telegram-icon {
+  font-size: 50px;
+  margin-bottom: 15px;
+  color: #0088cc;
+  animation: float 3s ease-in-out infinite;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 15px;
+  color: #0088cc;
+}
+
+.text {
+  font-size: 16px;
+  margin-bottom: 20px;
+  line-height: 1.5;
+  color: #c1d3e8;
+}
+
+.channel {
+  display: inline-block;
+  background: rgba(0, 136, 204, 0.2);
+  padding: 6px 15px;
+  border-radius: 20px;
+  margin: 10px 0;
+  font-family: "Courier New", monospace;
+  border: 1px solid rgba(0, 136, 204, 0.3);
+}
+
+.buttons {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.btn {
+  padding: 12px 25px;
+  border-radius: 25px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 14px;
+  border: none;
+}
+
+.primary {
+  background: #0088cc;
+  color: white;
+}
+
+.secondary {
+  background: transparent;
+  color: #0088cc;
+  border: 1px solid #0088cc;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* تنسيق إشعار الأمان */
+.security-alert {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  font-family: "Tajawal", sans-serif;
+}
+
+.alert-card {
+  background: #1e1e1e;
+  color: white;
+  padding: 30px;
+  border-radius: 15px;
+  width: 90%;
+  max-width: 450px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  animation: alertIn 0.5s ease;
+  border: 2px solid var(--alert-bg);
+}
+
+.alert-icon {
+  font-size: 60px;
+  margin-bottom: 20px;
+  color: var(--alert-bg);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.alert-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 15px;
+  color: var(--alert-bg);
+}
+
+.alert-text {
+  font-size: 16px;
+  margin-bottom: 25px;
+  line-height: 1.6;
+  color: var(--alert-text);
+}
+
+.alert-buttons {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.alert-btn {
+  padding: 12px 25px;
+  border-radius: 25px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-size: 16px;
+  border: none;
+}
+
+.alert-btn.primary {
+  background: var(--alert-bg);
+  color: white;
+}
+
+@keyframes alertIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
